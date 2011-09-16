@@ -1,0 +1,17 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" build-on-make="true" name="zipeg:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/war_exploded</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="zipeg-gae" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="AppEngine API" />
+          <element id="library" level="project" name="AppEngine ORM" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="zipeg-gae/web/Web" />
+    </root>
+  </artifact>
+</component>
