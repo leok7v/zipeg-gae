@@ -1,0 +1,5 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" trimDirectiveWhitespaces="true"
+import="com.samples.gae.controllers.*"
+%>
+<%@ page import="com.zipeg.gae.*" %>
+<%=((Fragment)Context.get()).text%> and result was rendered in fragment.jspf
