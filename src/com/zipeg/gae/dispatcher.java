@@ -250,7 +250,7 @@ public class dispatcher {
     }
 
     private static void setField(Field f, Object o, Object v) {
-        try { f.set(o, v); } catch (Throwable e) { throw new Error(e); }
+        try { f.set(o, v); } catch (Throwable e) { rethrow(e); }
     }
 
     public static String packageOf(String className) {

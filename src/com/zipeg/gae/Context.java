@@ -35,6 +35,8 @@ import javax.servlet.http.*;
 import java.io.*;
 import java.util.*;
 
+import static com.zipeg.gae.util.*;
+
 public class Context extends HashMap<String, Object> {
 
     private static final PersistenceManagerFactory pmf = // long init
@@ -49,7 +51,7 @@ public class Context extends HashMap<String, Object> {
     public HttpServletResponse res;
     public String revision = ""; // svn or other vcs revision
     public final PersistenceManager  pm = pmf.getPersistenceManagerProxy();
-    private PrintStream output;
+    private PrintWriter echoWriter;
 
     public static synchronized void set(Context ctx) {
         assert (get() == null) != (ctx == null) : "get()=" + get() + " ctx=" + ctx;
@@ -70,13 +72,13 @@ public class Context extends HashMap<String, Object> {
 
     public void echo(String s) { // cannot be used with forwarding to jsp/jspf views
         try {
-            if (output == null) {
-                output = new PrintStream(res.getOutputStream());
+            if (echoWriter == null) {
+                echoWriter = res.getWriter();
             }
-            output.println(s);
+            echoWriter.println(s);
             // do not close output stream so the echo can be used repeatedly.
         } catch (IOException e) {
-            e.printStackTrace();
+            rethrow(e);
         }
     }
 
