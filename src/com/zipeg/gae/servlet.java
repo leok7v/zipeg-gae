@@ -48,9 +48,6 @@ public class servlet extends HttpServlet {
         MemcacheServiceFactory.getMemcacheService().setErrorHandler(new StrictErrorHandler());
     }
 
-    private static final PersistenceManagerFactory pmf = // long init
-        JDOHelper.getPersistenceManagerFactory("transactions-optional");
-
     protected void service(HttpServletRequest req, HttpServletResponse res) throws
             ServletException, IOException {
         timestamp("service");
@@ -60,7 +57,7 @@ public class servlet extends HttpServlet {
         res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
         res.addHeader("Cache-Control", "post-check=0, pre-check=0");
         res.setHeader("Pragma", "no-cache");
-        if (!dispatcher.dispatch(getServletContext(), req, res, pmf.getPersistenceManagerProxy())) {
+        if (!dispatcher.dispatch(getServletContext(), req, res)) {
             super.service(req, res);
         }
         timestamp("service");

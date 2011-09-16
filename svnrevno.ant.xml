@@ -1,0 +1,7 @@
+<project name="svn rev" default="build">
+
+  <target name="build">
+    <exec executable="./svnrevno.sh"/>
+  </target>
+
+</project>
