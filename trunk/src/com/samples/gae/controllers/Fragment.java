@@ -34,6 +34,7 @@ import com.zipeg.gae.*;
 
 // to test: http://localhost:8080/fragment
 
+/** @noinspection UnusedDeclaration */
 public class Fragment extends Context {
 
     public String text;

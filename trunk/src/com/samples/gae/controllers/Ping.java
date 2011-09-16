@@ -34,6 +34,7 @@ import com.zipeg.gae.*;
 
 import java.util.*;
 
+/** @noinspection UnusedDeclaration */
 public final class Ping extends Context {
 
     Integer number;

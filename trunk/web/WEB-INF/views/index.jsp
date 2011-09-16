@@ -15,5 +15,8 @@ import="com.zipeg.gae.*"
   <p><a href="<%=Context.get().server%>mvc?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">mvc test</a></p>
   <p><a href="<%=Context.get().server%>fragment">fragment (fragment.jspf) test</a></p>
   <p><a href="<%=Context.get().server%>layout/page.jsp" >/layout/page.jsp</a> should not be accessible</p>
+  <br />
+  <p><a href="<%=Context.get().server%>signin" >signin</a></p>
+  <p><a href="<%=Context.get().server%>signout" >signout</a></p>
   </body>
 </html>

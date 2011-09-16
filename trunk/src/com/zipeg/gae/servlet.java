@@ -32,7 +32,6 @@ package com.zipeg.gae;
 
 import com.google.appengine.api.memcache.*;
 
-import javax.jdo.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;

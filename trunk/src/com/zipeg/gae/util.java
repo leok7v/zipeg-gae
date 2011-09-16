@@ -37,6 +37,7 @@ import java.security.*;
 import java.text.*;
 import java.util.*;
 
+/** @noinspection UnusedDeclaration */
 public class util {
 
     // Internet Engineering Task Force Date format:
@@ -65,7 +66,7 @@ public class util {
             try {
                 return new String((byte[])v, "UTF-8");
             } catch (UnsupportedEncodingException x) {
-                throw new Error(x);
+                rethrow(x);
             }
         }
         return v.toString();
@@ -130,6 +131,17 @@ public class util {
 
     public static int getCallerLineNumber() {
         return Thread.currentThread().getStackTrace()[3].getLineNumber();
+    }
+
+    public static void rethrow(Throwable t) throws Error {
+        throw t instanceof Error ? (Error)t : new Error(t);
+    }
+
+    public static Throwable unwind(Throwable t) {
+        while (t != null && t.getCause() != null) {
+            t = t.getCause();
+        }
+        return t;
     }
 
     public static boolean exists(File f) {

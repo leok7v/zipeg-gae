@@ -50,6 +50,7 @@ import static com.zipeg.gae.util.*;
     curl -d "date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true" http://localhost:8080/mvc
 */
 
+/** @noinspection UnusedDeclaration */
 public final class MVC extends Context {
 
     int number;
