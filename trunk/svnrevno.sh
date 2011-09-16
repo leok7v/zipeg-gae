@@ -1,0 +1,1 @@
+svnversion -n | sed -e 's/.*://' -e 's/[A-Z]*$//' > web/WEB-INF/revision.txt

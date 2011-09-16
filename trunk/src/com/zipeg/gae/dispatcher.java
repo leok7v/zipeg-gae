@@ -30,7 +30,6 @@
 */
 package com.zipeg.gae;
 
-import javax.jdo.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
@@ -55,62 +54,115 @@ public class dispatcher {
     private static final Map<String, Method> u2m =
             new HashMap<String, Method>(1000);
     private static final Set<String> contextMethods = new HashSet<String>(10);
+    private static String revision = "wip";
 
     private dispatcher() { }
 
+    private static void init(ServletContext sc) {
+        Set<Class<Context>> controllers = new HashSet<Class<Context>>(100);
+        getAllClasses(Context.class, controllers);
+        collectMethods(controllers, u2m);
+        for (Class<Context> c : controllers) {
+            trace("controller: " + c.getName());
+            collectFields(c);
+        }
+        Map<String, Method> cm = new HashMap<String, Method>();
+        collectMethods(Context.class, cm);
+        contextMethods.addAll(cm.keySet());
+        InputStream is = sc.getResourceAsStream("/WEB-INF/revision.txt");
+        if (is != null) {
+            revision = new String(io.readFully(is));
+        }
+    }
+
     public static synchronized boolean dispatch(ServletContext sc, HttpServletRequest req,
-            HttpServletResponse res, PersistenceManager pm) throws IOException, ServletException {
+            HttpServletResponse res) throws IOException, ServletException {
         synchronized (servlet.class) {
             if (!initialized) {
                 timestamp("dispatcher.initializeControllers");
-                initializeControllers();
+                init(sc);
                 timestamp("dispatcher.initializeControllers");
                 initialized = true;
             }
         }
         String uri = req.getRequestURI();
+        if (isEmpty(uri) || "/".equals(uri)) {
+            uri = "/index";
+        }
         String[] path = uri.substring(1).split("/");
+        Context ctx = null;
+        Method m = null;
+        String endpoint = null;
+        RequestDispatcher rd = null;
         for (int i = path.length - 1; i >= 0; i--) {
-            String endpoint = path[i].toLowerCase();
+            endpoint = path[i].toLowerCase();
             // do not dispatch to Context.get() Context.head() Context.body()
             // and any other public void methods() of Context it self
             if (!contextMethods.contains(endpoint)) {
-                Method m = u2m.get(endpoint);
+                m = u2m.get(endpoint);
                 Class<?> c = m == null ? null : m.getDeclaringClass();
                 if (c != null) {
                     // noinspection unchecked
                     Class<Context> cc = (Class<Context>)c;
-                    Context ctx = newInstance(cc);
-                    // we cannot do it ctor because field collecting instantiates controllers
-                    Context.set(ctx);
-                    try {
-                        ctx.req = req;
-                        ctx.res = res;
-                        ctx.pm = pm;
-                        ctx.path = path;
-                        ctx.view = endpoint;
-                        processParameters(ctx, req);
-                        invoke(m, ctx);
-                        forwardToJspView(sc, req, res, ctx.view);
-                    } finally {
-                        Context.set(null);
-                    }
-                    return true;
+                    ctx = newInstance(cc);
+                    fillContext(ctx, req, res, path, endpoint);
+                    processParameters(ctx, req);
+                    rd = getRequestDispatcher(sc, ctx.view);
+                    break;
                 }
+            }
+        }
+        if (ctx == null) {
+            for (int i = path.length - 1; i >= 0; i--) {
+                endpoint = path[i].toLowerCase();
+                rd = getRequestDispatcher(sc, endpoint);
+                if (rd != null) {
+                    break;
+                }
+            }
+            if (rd != null) {
+                ctx = new Context();
+                fillContext(ctx, req, res, path, endpoint);
+            }
+        }
+        if (ctx != null) {
+            // we cannot do Context.set() in ctor because field collecting instantiates controllers
+            Context.set(ctx);
+            try {
+                if (m != null) {
+                    invoke(m, ctx);
+                }
+                if (rd != null) {
+                    rd.forward(req, res);
+                }
+                return true;
+            } finally {
+                Context.set(null);
             }
         }
         return false;
     }
 
-    private static void forwardToJspView(ServletContext sc, HttpServletRequest req,
-            HttpServletResponse res, String view) throws IOException, ServletException {
+    private static void fillContext(Context ctx, HttpServletRequest req, HttpServletResponse res,
+            String[] path, String endpoint) {
+        ctx.req = req;
+        ctx.res = res;
+        ctx.path = path;
+        ctx.view = endpoint;
+        ctx.server =
+                (req.isSecure() ? "https://" : "http://") +
+                 req.getServerName() +
+                (req.getServerPort() == 80 ? "/" : ":" + req.getServerPort() + "/");
+        ctx.revision = revision;
+    }
+
+    private static RequestDispatcher getRequestDispatcher(ServletContext sc, String view) {
         String fileName = "/WEB-INF/views/" + view + ".jsp";
         File file = new File(sc.getRealPath(fileName));
         if (file.exists() && file.isFile() && file.canRead()) {
             RequestDispatcher rd = sc.getRequestDispatcher(fileName);
             if (rd != null) {
-                rd.forward(req, res);
-                return;
+                return rd;
             }
         }
         fileName = "/WEB-INF/views/" + view + ".jspf";
@@ -118,9 +170,10 @@ public class dispatcher {
         if (file.exists() && file.isFile() && file.canRead()) {
             RequestDispatcher rd = sc.getRequestDispatcher("/WEB-INF/layout/page.jsp");
             if (rd != null) {
-                rd.forward(req, res);
+                return rd;
             }
         }
+        return null;
     }
 
     private static void processParameters(Context ctx, HttpServletRequest req) {
@@ -226,19 +279,6 @@ public class dispatcher {
     private static Object invoke(Method m, Object o, Object... p) {
         // IllegalAccessException, InvocationTargetException
         try { return m.invoke(o, p); } catch (Throwable t) { throw new Error(t);}
-    }
-
-    private static void initializeControllers() {
-        Set<Class<Context>> controllers = new HashSet<Class<Context>>(100);
-        getAllClasses(Context.class, controllers);
-        collectMethods(controllers, u2m);
-        for (Class<Context> c : controllers) {
-            trace("controller: " + c.getName());
-            collectFields(c);
-        }
-        Map<String, Method> cm = new HashMap<String, Method>();
-        collectMethods(Context.class, cm);
-        contextMethods.addAll(cm.keySet());
     }
 
     private static File resolveFile(ClassLoader cl, String resource) {

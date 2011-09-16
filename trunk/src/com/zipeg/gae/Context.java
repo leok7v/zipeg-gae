@@ -37,13 +37,18 @@ import java.util.*;
 
 public class Context extends HashMap<String, Object> {
 
+    private static final PersistenceManagerFactory pmf = // long init
+        JDOHelper.getPersistenceManagerFactory("transactions-optional");
+
     private static ThreadLocal<Context> tl = new ThreadLocal<Context>();
 
     public String[] path; // uri="/foo/bar" results in path={"foo", "bar"}
     public String view;  // can be null
+    public String server;  // http[s]://localhost:8080/ (with trailing slash
     public HttpServletRequest  req;
     public HttpServletResponse res;
-    public PersistenceManager  pm;
+    public String revision = ""; // svn or other vcs revision
+    public final PersistenceManager  pm = pmf.getPersistenceManagerProxy();
     private PrintStream output;
 
     public static synchronized void set(Context ctx) {
