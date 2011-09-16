@@ -71,7 +71,7 @@ public class dispatcher {
         contextMethods.addAll(cm.keySet());
         InputStream is = sc.getResourceAsStream("/WEB-INF/revision.txt");
         if (is != null) {
-            revision = new String(io.readFully(is));
+            revision = new String(io.readFully(is)).trim();
         }
     }
 
