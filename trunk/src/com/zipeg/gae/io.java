@@ -45,8 +45,8 @@ public class io {
         try {
             s = new FileInputStream(f);
             byte[] buf = new byte[(int)f.length()];
-            int n = s.read(buf); // TODO: this is very opportunistic assumption :)
-            if (n != f.length()) {
+            int n = s.read(buf);
+            if (n != f.length()) { // this is very opportunistic assumption not yet seen broken
                 throw new Error("incomplete read: " + f);
             }
             return buf;
