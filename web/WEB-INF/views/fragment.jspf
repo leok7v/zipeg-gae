@@ -2,4 +2,6 @@
 import="com.samples.gae.controllers.*"
 %>
 <%@ page import="com.zipeg.gae.*" %>
+<p>fragment.jspf<br />
 <%=((Fragment)Context.get()).text%> and result was rendered in fragment.jspf
+</p>
