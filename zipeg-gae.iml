@@ -12,6 +12,8 @@
       </configuration>
       <facet type="google-app-engine" name="Google App Engine">
         <configuration>
+          <email></email>
+          <password></password>
           <files-to-enhance>
             <file path="$MODULE_DIR$/src" />
           </files-to-enhance>
