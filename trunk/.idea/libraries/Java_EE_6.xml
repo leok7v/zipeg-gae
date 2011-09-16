@@ -10,8 +10,6 @@
       <root url="jar://$PROJECT_DIR$/lib/javax.servlet.jsp.jstl.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="intellijad://intellijad" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>
