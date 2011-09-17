@@ -4,7 +4,9 @@
       <root url="file://$USER_HOME$/sdk/appengine-java-sdk-latest/lib/user" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="intellijad://intellijad" />
+    </SOURCES>
     <jarDirectory url="file://$USER_HOME$/sdk/appengine-java-sdk-latest/lib/user" recursive="false" />
   </library>
 </component>

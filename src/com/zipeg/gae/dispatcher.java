@@ -133,7 +133,13 @@ public class dispatcher {
                     invoke(m, ctx);
                 }
                 if (rd != null) {
-                    rd.forward(req, res);
+                    if (ctx.isRedirected() || ctx.hasOutput()) {
+                        trace("WARNING: dispatched did not forward to " + endpoint + ".jsp[f]" +
+                              " because ctx.isRedirected()=" + ctx.isRedirected() +
+                              " or ctx.hasOutput()=" + ctx.hasOutput());
+                    } else {
+                        rd.forward(req, res);
+                    }
                 }
                 return true;
             } finally {
@@ -394,7 +400,7 @@ public class dispatcher {
         for (Method m : ms) {
             String name = m.getName().toLowerCase();
             if (m.getParameterTypes().length == 0 && isPublic(m.getModifiers()) &&
-                m.getDeclaringClass().equals(c)) {
+                m.getDeclaringClass().equals(c) && void.class.equals(m.getReturnType())) {
                 if (r.containsKey(name)) {
                     throw new Error("ambiguous method: " + c.getName() + "." + m.getName() +
                             " clashes with " +
