@@ -53,6 +53,8 @@ public class Context extends HashMap<String, Object> {
     public final PersistenceManager  pm = pmf.getPersistenceManagerProxy();
     private PrintWriter echoWriter;
     private boolean redirected;
+    private StringBuilder head = new StringBuilder();
+    private StringBuilder body = new StringBuilder();
 
     public static synchronized void set(Context ctx) {
         assert (get() == null) != (ctx == null) : "get()=" + get() + " ctx=" + ctx;
@@ -63,12 +65,20 @@ public class Context extends HashMap<String, Object> {
         return tl.get();
     }
 
+    public boolean isRedirected() {
+        return redirected;
+    }
+
+    public boolean hasOutput() {
+        return echoWriter != null;
+    }
+
     public String head() {
-        return ""; // override and return content of <head></head>
+        return head.toString(); // override and return content of <head></head> and call super
     }
 
     public String body() {
-        return ""; // override and return content of <body></body>
+        return body.toString(); // override and return content of <body></body> and call super
     }
 
     public void echo(String s) { // cannot be used with forwarding to jsp/jspf views
@@ -85,6 +95,20 @@ public class Context extends HashMap<String, Object> {
         }
     }
 
+    public void appendToHead(String s) {
+        if (hasOutput()) {
+            throw new Error("already used echo() cannot append to head");
+        }
+        head.append(s);
+    }
+
+    public void appendToBody(String s) {
+        if (hasOutput()) {
+            throw new Error("already used echo() cannot append to body");
+        }
+        body.append(s);
+    }
+
     // to keep dispatcher functioning correctly, please use this version of sendRedirect()
     // instead of directly calling res.sendRedirect(res.encodeRedirectURL(url))
     public static void sendRedirect(String unencodedURL) {
@@ -94,14 +118,6 @@ public class Context extends HashMap<String, Object> {
         } catch (IOException e) {
             throw new Error(e);
         }
-    }
-
-    public boolean isRedirected() {
-        return redirected;
-    }
-
-    public boolean hasOutput() {
-        return echoWriter != null;
     }
 
 }
