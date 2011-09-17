@@ -36,10 +36,12 @@ import com.zipeg.gae.*;
 import java.io.*;
 import java.util.*;
 
+// http://code.google.com/apis/accounts/docs/OpenID.html
+
 /** @noinspection UnusedDeclaration */
 public class Auth extends Context {
 
-    private final UserService us = UserServiceFactory.getUserService();
+    private final Users us = Users.getUserService();
 
     // http://groups.google.com/group/google-appengine/browse_thread/thread/2e0c459c14cde662
     private static final String[][] openIdProviders = new String[][] {
@@ -55,10 +57,13 @@ public class Auth extends Context {
     String returnURL;
 
     public void signin() throws IOException {
+        // http://openid.net/specs/openid-authentication-2_0.html#anchor27
         Set<String> attributes = new HashSet<String>();
+        attributes.add("openid.ax.required=email,firstname,lastname");
         if (us.isUserLoggedIn()) {
             User u = us.getCurrentUser(); // or req.getUserPrincipal()
             echo("Hello <i>" + u.getNickname() + "</i>!<br />");
+            echo("req.getUserPrincipal()=" + req.getUserPrincipal() + "<br />");
             echo("user.getEmail()=" + u.getEmail() + "<br />");
             echo("user.getUserId()=" + u.getUserId() + "<br />");
             echo("user.getFederatedIdentity()=" + u.getFederatedIdentity() + "<br />");
