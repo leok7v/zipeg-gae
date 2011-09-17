@@ -50,6 +50,10 @@ public class Auth extends Context {
         new String[] {"MyOpenId.com", "myopenid.com"}
     };
 
+    String openid_identifier;
+    String openid_username;
+    String returnURL;
+
     public void signin() throws IOException {
         Set<String> attributes = new HashSet<String>();
         if (us.isUserLoggedIn()) {
@@ -65,18 +69,29 @@ public class Auth extends Context {
                     + us.createLogoutURL(req.getRequestURI())
                     + "\">sign out</a>]");
         } else {
-            echo("Sign in at: ");
-            for (String[] pair : openIdProviders) {
-                String providerUrl = pair[1];
-                String loginUrl = us.createLoginURL(req.getRequestURI(), null, pair[1], attributes);
-                echo("[<a href=\"" + loginUrl + "\">" + pair[0] + "</a>] ");
+            if (!util.isEmpty(openid_identifier)) {
+                if (util.isEmpty(returnURL)) {
+                    returnURL = req.getRequestURI();
+                }
+                String loginUrl = us.createLoginURL(returnURL, null, openid_identifier, attributes);
+                sendRedirect(loginUrl);
+            } else {
+                sendRedirect("/oid");
+/*
+                echo("Sign in at: ");
+                for (String[] pair : openIdProviders) {
+                    String providerUrl = pair[1];
+                    String loginUrl = us.createLoginURL(req.getRequestURI(), null, pair[1], attributes);
+                    echo("[<a href=\"" + loginUrl + "\">" + pair[0] + "</a>] ");
+                }
+*/
             }
         }
     }
 
     public void signout() throws IOException {
         if (us.isUserLoggedIn()) {
-            res.sendRedirect(res.encodeRedirectURL(us.createLogoutURL(req.getRequestURI())));
+            sendRedirect(us.createLogoutURL(req.getRequestURI()));
         }
     }
 

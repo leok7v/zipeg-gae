@@ -52,6 +52,7 @@ public class Context extends HashMap<String, Object> {
     public String revision = ""; // svn or other vcs revision
     public final PersistenceManager  pm = pmf.getPersistenceManagerProxy();
     private PrintWriter echoWriter;
+    private boolean redirected;
 
     public static synchronized void set(Context ctx) {
         assert (get() == null) != (ctx == null) : "get()=" + get() + " ctx=" + ctx;
@@ -71,15 +72,36 @@ public class Context extends HashMap<String, Object> {
     }
 
     public void echo(String s) { // cannot be used with forwarding to jsp/jspf views
-        try {
-            if (echoWriter == null) {
-                echoWriter = res.getWriter();
+        if (!util.isEmpty(s)) {
+            try {
+                if (echoWriter == null) {
+                    echoWriter = res.getWriter();
+                }
+                echoWriter.println(s);
+                // do not close output stream so the echo can be used repeatedly.
+            } catch (IOException e) {
+                rethrow(e);
             }
-            echoWriter.println(s);
-            // do not close output stream so the echo can be used repeatedly.
-        } catch (IOException e) {
-            rethrow(e);
         }
+    }
+
+    // to keep dispatcher functioning correctly, please use this version of sendRedirect()
+    // instead of directly calling res.sendRedirect(res.encodeRedirectURL(url))
+    public static void sendRedirect(String unencodedURL) {
+        try {
+            get().res.sendRedirect(get().res.encodeRedirectURL(unencodedURL));
+            get().redirected = true;
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+    }
+
+    public boolean isRedirected() {
+        return redirected;
+    }
+
+    public boolean hasOutput() {
+        return echoWriter != null;
     }
 
 }

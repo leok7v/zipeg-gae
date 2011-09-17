@@ -1,0 +1,179 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" trimDirectiveWhitespaces="true"
+import="com.samples.gae.controllers.Auth"
+import="com.zipeg.gae.*"
+%>
+<%--
+  jQuery OpenID Plugin 1.1 Copyright 2009 Jarrett Vance
+  http://jvance.com/pages/JQueryOpenIDPlugin.xhtml
+--%>
+<div id="open_id_div" style="display: none;">
+<h1>Sign In with OpenID or Facebook</h1>
+<form class="openid" method="post" action="/signin?returnURL=">
+  <div>
+    <ul class="providers">
+      <li class="direct" title="Facebook">
+        <img src="img/oid/facebookB.png" alt="icon" />
+        <span>https://www.facebook.com/dialog/oauth?client_id=140468439300230&redirect_uri=<%=Context.get().server%>signin</span>
+      </li>
+      <li class="direct" title="Google">
+        <img src="img/oid/googleB.png" alt="icon" />
+        <span>https://www.google.com/accounts/o8/id</span>
+      </li>
+      <li class="direct" title="Yahoo">
+        <img src="img/oid/yahooB.png" alt="icon" />
+        <span>http://yahoo.com/</span>
+      </li>
+      <li class="username" title="Flickr user name">
+        <img src="img/oid/flickrB.png" alt="icon" />
+        <span>http://flickr.com/<strong>username</strong>/</span>
+      </li>
+    </ul>
+    <div style="clear: both;"></div>
+    <ul>
+      <li class="username" title="AOL screen name">
+        <img src="img/oid/aolB.png" alt="icon" />
+        <span>http://openid.aol.com/<strong>username</strong></span>
+      </li>
+      <li class="username" title="Wordpress blog name">
+        <img src="img/oid/wordpress.png" alt="icon" />
+        <span>http://<strong>username</strong>.wordpress.com</span>
+      </li>
+      <li class="username" title="Blogger blog name">
+        <img src="img/oid/blogger.png" alt="icon" />
+        <span>http://<strong>username</strong>.blogspot.com/</span>
+      </li>
+      <li class="username" title="LiveJournal blog name">
+        <img src="img/oid/livejournal.png" alt="icon" />
+        <span>http://<strong>username</strong>.livejournal.com</span>
+      </li>
+      <li class="username" title="MyOpenID user name">
+        <img src="img/oid/myopenid.png" alt="icon" />
+        <span>http://<strong>username</strong>.myopenid.com/</span>
+      </li>
+      <li class="username" title="Technorati user name">
+        <img src="img/oid/technorati.png" alt="icon" />
+        <span>http://technorati.com/people/technorati/<strong>username</strong>/</span>
+      </li>
+      <li class="username" title="ClaimID user name">
+        <img src="img/oid/claimid.png" alt="icon" />
+        <span>http://claimid.com/<strong>username</strong></span>
+      </li>
+      <li class="username" title="Vidoop user name">
+        <img src="img/oid/vidoop.png" alt="icon" />
+        <span>http://<strong>username</strong>.myvidoop.com/</span>
+      </li>
+      <li class="username" title="Verisign user name">
+        <img src="img/oid/verisign.png" alt="icon" />
+        <span>http://<strong>username</strong>.pip.verisignlabs.com/</span>
+      </li>
+      <li class="openid" title="OpenID">
+        <img src="img/oid/openidW.png" alt="icon" />
+        <span><strong>http://{your-openid-url}</strong></span>
+      </li>
+    </ul>
+  </div>
+  <fieldset>
+  <label for="openid_username">Enter your <span>Provider user name</span></label>
+  <div><span></span><input type="text" name="openid_username" id="openid_username"/><span></span>
+  <input type="submit" value="Sign In" /></div>
+  </fieldset>
+  <fieldset>
+  <label for="openid_identifier">Enter your <a class="openid_logo" href="http://openid.net">OpenID</a></label>
+  <div><input type="text" name="openid_identifier" id="openid_identifier" />
+  <input type="submit" value="Login" /></div>
+  </fieldset>
+</form>
+</div>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+
+<script type="text/javascript">
+$.fn.openid = function() {
+  var $this = $(this);
+  var $usr = $this.find('input[name=openid_username]');
+  var $id = $this.find('input[name=openid_identifier]');
+  var $front = $this.find('div:has(input[name=openid_username])>span:eq(0)');
+  var $end = $this.find('div:has(input[name=openid_username])>span:eq(1)');
+  var $usrfs = $this.find('fieldset:has(input[name=openid_username])');
+  var $idfs = $this.find('fieldset:has(input[name=openid_identifier])');
+
+  var submitusr = function() {
+    if ($usr.val().length < 1) {
+      $usr.focus();
+      return false;
+    }
+    $id.val($front.text() + $usr.val() + $end.text());
+    return true;
+  };
+
+  var submitid = function() {
+    if ($id.val().length < 1) {
+      $id.focus();
+      return false;
+    }
+    return true;
+
+  };
+  var direct = function() {
+    var $li = $(this);
+    $li.parent().find('li').removeClass('highlight');
+    $li.addClass('highlight');
+    $usrfs.fadeOut();
+    $idfs.fadeOut();
+
+    $this.unbind('submit').submit(function() {
+      $id.val($this.find("li.highlight span").text());
+    });
+    $this.submit();
+    return false;
+  };
+
+  var openid = function() {
+    var $li = $(this);
+    $li.parent().find('li').removeClass('highlight');
+    $li.addClass('highlight');
+    $usrfs.fadeOut();
+    $idfs.fadeIn();
+    $id.focus();
+    $this.unbind('submit').submit(submitid);
+    return false;
+  };
+
+  var username = function() {
+    var $li = $(this);
+    $li.parent().find('li').removeClass('highlight');
+    $li.addClass('highlight');
+    $idfs.hide();
+    $usrfs.fadeIn();
+    $this.find('label[for=openid_username] span').text($li.attr("title"));
+    $front.text($li.find("span").text().split("username")[0]);
+    $end.text("").text($li.find("span").text().split("username")[1]);
+    $id.focus();
+    $this.unbind('submit').submit(submitusr);
+    return false;
+  };
+
+  $this.find('li.direct').click(direct);
+  $this.find('li.openid').click(openid);
+  $this.find('li.username').click(username);
+  $id.keypress(function(e) {
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+      return submitid();
+    }
+  });
+  $usr.keypress(function(e) {
+    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+      return submitusr();
+    }
+  });
+  $this.find('li span').hide();
+  $this.find('li').css('line-height', 0).css('cursor', 'pointer');
+  $('#open_id_div').fadeIn();
+  // TODO: fix me - sticky highlight
+  $this.find('li:eq(0)').addClass('highlight');
+  $usrfs.hide();
+  $idfs.hide();
+  return this;
+};
+$(function() { $("form.openid:eq(0)").openid(); });
+</script>
