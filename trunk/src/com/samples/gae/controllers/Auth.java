@@ -31,10 +31,15 @@
 package com.samples.gae.controllers;
 
 import com.google.appengine.api.users.*;
+import com.samples.gae.model.*;
 import com.zipeg.gae.*;
 
 import java.io.*;
 import java.util.*;
+
+import com.google.appengine.api.datastore.*;
+
+import static com.zipeg.gae.util.*;
 
 // http://code.google.com/apis/accounts/docs/OpenID.html
 
@@ -42,15 +47,6 @@ import java.util.*;
 public class Auth extends Context {
 
     private final Users us = Users.getUserService();
-
-    // http://groups.google.com/group/google-appengine/browse_thread/thread/2e0c459c14cde662
-    private static final String[][] openIdProviders = new String[][] {
-        new String[] {"Google", "www.google.com/accounts/o8/id"},
-        new String[] {"Yahoo", "yahoo.com"},
-        new String[] {"MySpace", "myspace.com"},
-        new String[] {"AOL", "aol.com"},
-        new String[] {"MyOpenId.com", "myopenid.com"}
-    };
 
     String openid_identifier;
     String openid_username;
@@ -73,6 +69,32 @@ public class Auth extends Context {
             echo("[<a href=\""
                     + us.createLogoutURL(req.getRequestURI())
                     + "\">sign out</a>]");
+            timestamp("query");
+            // noinspection unchecked
+            Collection<Account> as = (Collection<Account>)
+                    pm.newQuery(Account.class, "id == '" + u.getUserId() + "'").execute();
+            timestamp("query");
+            Account a;
+            if (as != null && as.size() > 0) {
+                assert as.size() == 1 : "as.size()=" + as.size() + " for u.getUserId()=" + u.getUserId();
+                a = as.iterator().next();
+            } else {
+                a = new Account();
+                a.id = u.getUserId();
+            }
+            assert equal(a.id, u.getUserId()) : "a.id=" + a.id + " u.getUserId()=" + u.getUserId();
+            a.nickname = u.getNickname();
+            a.email = u.getEmail();
+            a.authDomain = u.getAuthDomain();
+            a.federatedIdentity = u.getFederatedIdentity();
+            timestamp("makePersistent");
+            pm.makePersistent(a);
+            timestamp("makePersistent");
+            Key k = KeyFactory.createKey(Account.class.getSimpleName(), u.getUserId());
+            timestamp("getObjectById");
+            Account v = pm.getObjectById(Account.class, k);
+            timestamp("getObjectById");
+            assert a.equals(v);
         } else {
             if (!util.isEmpty(openid_identifier)) {
                 if (util.isEmpty(returnURL)) {
@@ -82,14 +104,6 @@ public class Auth extends Context {
                 sendRedirect(loginUrl);
             } else {
                 sendRedirect("/oid");
-/*
-                echo("Sign in at: ");
-                for (String[] pair : openIdProviders) {
-                    String providerUrl = pair[1];
-                    String loginUrl = us.createLoginURL(req.getRequestURI(), null, pair[1], attributes);
-                    echo("[<a href=\"" + loginUrl + "\">" + pair[0] + "</a>] ");
-                }
-*/
             }
         }
     }

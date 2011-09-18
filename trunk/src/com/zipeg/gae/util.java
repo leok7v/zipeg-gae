@@ -57,6 +57,10 @@ public class util {
         return s == null || s.length() == 0;
     }
 
+    public static boolean equal(Object o1, Object o2) {
+        return o1 == o2 || o1 != null && o1.equals(o2) || o2.equals(o1);
+    }
+
     public static String trim(String s) {
         return s == null ? null : s.trim();
     }
