@@ -50,6 +50,7 @@ public class Context extends HashMap<String, Object> {
     public HttpServletRequest  req;
     public HttpServletResponse res;
     public String revision = ""; // svn or other vcs revision
+    public String fbAppId = "101750116536752";  // test @ FB:leo.kuznetsov@gmail.com
     public final PersistenceManager  pm = pmf.getPersistenceManagerProxy();
     private PrintWriter echoWriter;
     private boolean redirected;
