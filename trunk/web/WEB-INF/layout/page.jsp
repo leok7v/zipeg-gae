@@ -7,7 +7,7 @@ import="com.zipeg.gae.*"
     <%@include file="head.jspf"%>
   </head>
   <body>
-    <% if (!util.isEmpty(Context.get().view)) { %>
+    <% if (!str.isEmpty(Context.get().view)) { %>
       <jsp:include page="<%=\"/WEB-INF/views/\" + Context.get().view + \".jspf\"%>" />
     <% } %>
     <%=Context.get().body()%>

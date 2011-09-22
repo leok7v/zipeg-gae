@@ -39,6 +39,7 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 
+import static com.zipeg.gae.io.*;
 import static com.zipeg.gae.util.*;
 
 public class Context extends HashMap<String, Object> {
@@ -92,7 +93,7 @@ public class Context extends HashMap<String, Object> {
     }
 
     public void echo(String s) { // cannot be used with forwarding to jsp/jspf views
-        if (!util.isEmpty(s)) {
+        if (!str.isEmpty(s)) {
             try {
                 if (echoWriter == null) {
                     echoWriter = res.getWriter();
@@ -133,7 +134,7 @@ public class Context extends HashMap<String, Object> {
     public static String localURL(String endpoint_and_query) {
         String s = get().serverURL;
         assert s.endsWith("/") : "unexpected serverURL=" + s;
-        String eq = null2empty(endpoint_and_query);
+        String eq = str.null2empty(endpoint_and_query);
         return s + (eq.startsWith("/") ? eq.substring(1) : eq);
     }
 
@@ -153,23 +154,16 @@ public class Context extends HashMap<String, Object> {
             wr.close();
             int code = c.getResponseCode();
             if (code == 200) {
-                byte[] raw = io.readFully(c.getInputStream());
-                return util.trim(new String(raw));
+                byte[] raw = readFullyAndClose(c.getInputStream());
+                return str.trim(new String(raw));
             } else {
-                System.err.println("postData(" + endpoint + ", " + data +") returned " + code);
+                trace("postData(" + endpoint + ", " + data +") returned " + code);
                 Thread.dumpStack();
                 return "";
             }
-        } catch (MalformedURLException e) {
-            System.err.println("postData(" + endpoint + ", " + data +") failed " + e.getMessage());
-            e.printStackTrace();
-            return "";
-        } catch (java.net.ProtocolException e) {
-            System.err.println("postData(" + endpoint + ", " + data +") failed " + e.getMessage());
-            e.printStackTrace();
-            return "";
-        } catch (IOException e) {
-            System.err.println("postData(" + endpoint + ", " + data +") failed " + e.getMessage());
+        } catch (Throwable e) {
+            // MalformedURLException, ProtocolException, IOException
+            trace("post(" + endpoint + ", " + data +") failed " + e.getMessage());
             e.printStackTrace();
             return "";
         } finally {

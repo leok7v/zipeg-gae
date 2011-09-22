@@ -1,7 +1,10 @@
 package com.samples.gae.model;
 
-import static com.zipeg.gae.util.*;
+import com.zipeg.gae.*;
+
 import javax.jdo.annotations.*;
+
+import static com.zipeg.gae.obj.equal;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Account {

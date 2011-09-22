@@ -83,7 +83,7 @@ public class Auth extends Context {
                 a = new Account();
                 a.id = u.getUserId();
             }
-            assert equal(a.id, u.getUserId()) : "a.id=" + a.id + " u.getUserId()=" + u.getUserId();
+            assert obj.equal(a.id, u.getUserId()) : "a.id=" + a.id + " u.getUserId()=" + u.getUserId();
             a.nickname = u.getNickname();
             a.email = u.getEmail();
             a.authDomain = u.getAuthDomain();
@@ -97,8 +97,8 @@ public class Auth extends Context {
             timestamp("getObjectById");
             assert a.equals(v);
         } else {
-            if (!util.isEmpty(openid_identifier)) {
-                if (util.isEmpty(returnURL)) {
+            if (!str.isEmpty(openid_identifier)) {
+                if (str.isEmpty(returnURL)) {
                     returnURL = req.getRequestURI();
                 }
                 String loginUrl = us.createLoginURL(returnURL, null, openid_identifier, attributes);
