@@ -62,7 +62,7 @@ public class Users implements UserService  {
             // http://developers.facebook.com/docs/reference/dialogs/oauth/
             // http://developers.facebook.com/docs/reference/dialogs/#display
             // http://developers.facebook.com/docs/reference/api/permissions/
-            String scope = "user_about_me,email"; // TODO: from attributesRequest
+            String scope = "user_about_me,email"; // this is default for facebook
             if (attributesRequest != null) {
                 for (String a : attributesRequest) {
                     if (a.startsWith("fb=")) {
@@ -102,7 +102,7 @@ public class Users implements UserService  {
         if (Context.get().fbUser == null) {
             String uid = Context.get().getUserInfo("uid");
             String email = Context.get().getUserInfo("email");
-            if (!util.isEmpty(uid) && !util.isEmpty(email)) {
+            if (!str.isEmpty(uid) && !str.isEmpty(email)) {
                 Context.get().fbUser = new User(email, "", uid, "https://wwww.facebook.com/");
             }
         }
@@ -119,7 +119,7 @@ public class Users implements UserService  {
     }
 
     private boolean isFacebook(String fi) {
-        return !util.isEmpty(fi) && fi.startsWith("https://www.facebook.com/");
+        return !str.isEmpty(fi) && fi.startsWith("https://www.facebook.com/");
     }
 
 }

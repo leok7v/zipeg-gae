@@ -40,6 +40,8 @@ import java.util.*;
 
 import static java.lang.reflect.Modifier.*;
 import static com.zipeg.gae.util.*;
+import static com.zipeg.gae.io.*;
+import static com.zipeg.gae.str.*;
 
 @SuppressWarnings({"unchecked"})
 public class dispatcher {
@@ -78,10 +80,10 @@ public class dispatcher {
         InputStream is = sc.getResourceAsStream("/WEB-INF/revision.txt");
         try {
             if (is != null) {
-                revision = new String(io.readFully(is)).trim();
+                revision = new String(readFully(is)).trim();
             }
         } finally {
-            io.close(is);
+            close(is);
         }
     }
 
@@ -100,7 +102,7 @@ public class dispatcher {
                 server = Collections.unmodifiableMap(m);
             }
         } finally {
-            io.close(is);
+            close(is);
         }
     }
 

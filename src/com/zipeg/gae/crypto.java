@@ -64,11 +64,11 @@ public class crypto {
     }
 
     public static String encrypt(String data, String hexKey) {
-        return toHex(encrypt(toUTF8(data), fromHex(hexKey)));
+        return str.toHex(encrypt(str.toUTF8(data), str.fromHex(hexKey)));
     }
 
     public static String decrypt(String hexData, String hexKey) {
-        return fromUTF8(decrypt(fromHex(hexData), fromHex(hexKey)));
+        return str.fromUTF8(decrypt(str.fromHex(hexData), str.fromHex(hexKey)));
     }
 
     public static String encryptJson(Map<Object, Object> data, String hexKey) {
@@ -93,7 +93,7 @@ public class crypto {
         timestamp("KeyGenerator.getInstance");
         gen.init(256);
         SecretKey sk = gen.generateKey();
-        String key = toHex(sk.getEncoded());
+        String key = str.toHex(sk.getEncoded());
         System.out.println("AES256_KEY=" + key);
         String data = "Big brown fox jumped over the lazy dog";
         for (int i = 0; i < 10; i++) {

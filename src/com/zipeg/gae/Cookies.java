@@ -23,14 +23,14 @@ public final class Cookies extends HashMap<Object, Object> {
         Cookies c = getInstance();
         String e = crypto.encryptJson(c);
         Context ctx = Context.get();
-        String VERSION = defau1t(ctx.server.get("COOKIE_VERSION"), "1");
-        String NAME = defau1t(ctx.server.get("COOKIE_NAME"), "my_cookie");
-        String AGE = defau1t(ctx.server.get("COOKIE_AGE_SECONDS"), "" + 3600 * 24 * 5);
+        String VERSION = str.defau1t(ctx.server.get("COOKIE_VERSION"), "1");
+        String NAME = str.defau1t(ctx.server.get("COOKIE_NAME"), "my_cookie");
+        String AGE = str.defau1t(ctx.server.get("COOKIE_AGE_SECONDS"), "" + 3600 * 24 * 5);
         Cookie cookie = new Cookie(NAME, e);
         cookie.setPath("/");
         cookie.setDomain(ctx.req.getServerName());
         cookie.setSecure(ctx.serverURL.contains("https://"));
-        if (c.delete || util.isEmpty(e)) {
+        if (c.delete || str.isEmpty(e)) {
             cookie.setMaxAge(0); // delete cookie
         } else {
             cookie.setMaxAge(a2i(AGE));
@@ -41,8 +41,8 @@ public final class Cookies extends HashMap<Object, Object> {
 
     public static void decode() {
         Context ctx = Context.get();
-        String VERSION = defau1t(ctx.server.get("COOKIE_VERSION"), "1");
-        String NAME = defau1t(ctx.server.get("COOKIE_NAME"), "my_cookie");
+        String VERSION = str.defau1t(ctx.server.get("COOKIE_VERSION"), "1");
+        String NAME = str.defau1t(ctx.server.get("COOKIE_NAME"), "my_cookie");
         Cookie[] cs = ctx.req.getCookies();
         boolean decoded = false;
         if (cs != null) {

@@ -40,18 +40,16 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import static com.zipeg.gae.io.*;
 import static com.zipeg.gae.util.*;
 
+/** @noinspection UnusedDeclaration */
 public class FacebookAuth extends Context  {
-
-    private boolean isFacebook(String fi) {
-        return !util.isEmpty(fi) && fi.startsWith("https://www.facebook.com/");
-    }
 
     public void facebook_logout() {
         String token = getUserInfo("token");
         Cookies.getInstance().remove("user_info");
-        if (!util.isEmpty(token)) {
+        if (!str.isEmpty(token)) {
             String u = "https://www.facebook.com/logout.php?next=" + encodeURL(destination) +
                     "&access_token=" + token;
             echo("<!DOCTYPE html>" +
@@ -136,8 +134,8 @@ public class FacebookAuth extends Context  {
                 "\n error_reason=" + error_reason +
                 "\n error_description=" + error_description +
                 "\n signed_request=" + signed_request);
-        if (util.isEmpty(error)) {
-            if (!util.isEmpty(signed_request)) {
+        if (str.isEmpty(error)) {
+            if (!str.isEmpty(signed_request)) {
                 try {
                     Map<Object, Object> m = parse_signed_request(signed_request, fbAppSecret);
                     Date issued_at = new Date((Long)m.get("issued_at"));
@@ -148,7 +146,7 @@ public class FacebookAuth extends Context  {
                     String first = (String)m.get("first_name");
                     String last = (String)m.get("last_name");
                     String username = (String)m.get("username");
-                    if (util.isEmpty(token) && !util.isEmpty(code) && !util.isEmpty(uid)) {
+                    if (str.isEmpty(token) && !str.isEmpty(code) && !str.isEmpty(uid)) {
                         try {
                             URL url = new URL("https://graph.facebook.com/oauth/access_token?" +
                                     "client_id=" + Context.get().fbAppId +
@@ -157,7 +155,7 @@ public class FacebookAuth extends Context  {
                                     "&state=" + state +
                                     "&type=client_cred" +
                                     "&redirect_uri=" + localURL("/facebook_auth_response"));
-                            String response = new String(io.readFullyAndClose(url.openStream()));
+                            String response = new String(readFullyAndClose(url.openStream()));
                             String[] parts = response.split("[=&]");
                             if (parts.length >= 2 && "access_token".equalsIgnoreCase(parts[0])) {
                                 token = parts[1];
@@ -168,16 +166,16 @@ public class FacebookAuth extends Context  {
                             throw new Error(e);
                         }
                     }
-                    if (!util.isEmpty(token) && (util.isEmpty(uid) || util.isEmpty(email) ||
-                        util.isEmpty(first) || util.isEmpty(last))) {
+                    if (!str.isEmpty(token) && (str.isEmpty(uid) || str.isEmpty(email) ||
+                        str.isEmpty(first) || str.isEmpty(last))) {
                         try {
                             // http://developers.facebook.com/docs/reference/api/user/
                             String u = "https://graph.facebook.com/" +
-                                    (util.isEmpty(uid) ? "me" : uid) +
+                                    (str.isEmpty(uid) ? "me" : uid) +
                                     "&state=" + state +
                                     "&access_token=" + encodeURL(token);
                             URL url = new URL(u);
-                            String s = new String(io.readFullyAndClose(url.openStream()));
+                            String s = new String(readFullyAndClose(url.openStream()));
                             Map<Object, Object> map = json.decode(s);
                             uid = (String)map.get("id");
                             email = (String)map.get("email");
@@ -197,7 +195,7 @@ public class FacebookAuth extends Context  {
                     trace("first=" + first);
                     trace("last=" + last);
                     trace("issued_at=" + issued_at);
-                    if (util.isEmpty(email) && !util.isEmpty(username)) {
+                    if (str.isEmpty(email) && !str.isEmpty(username)) {
                         email = username + "@facebook.com";
                     }
                     userInfo = new HashMap<String, String>();
@@ -216,7 +214,7 @@ public class FacebookAuth extends Context  {
                     error = e.getMessage();
                 }
             }
-            if (!util.isEmpty(access_token)) {
+            if (!str.isEmpty(access_token)) {
                 
             }
         }

@@ -34,7 +34,6 @@ import com.google.appengine.api.quota.*;
 
 import java.io.*;
 import java.net.*;
-import java.security.*;
 import java.text.*;
 import java.util.*;
 
@@ -54,103 +53,10 @@ public class util {
             new ThreadLocal<Map<String, Map<String, Long>>>();
     private static final QuotaService qs = QuotaServiceFactory.getQuotaService();
 
-    public static boolean isEmpty(String s) {
-        return s == null || s.length() == 0;
-    }
-
-    public static String null2empty(String s) {
-        return s == null ? s : s.trim();
-    }
-
-    public static String defau1t(String s, String defau1t) {
-        return isEmpty(s) ? defau1t : s;
-    }
-
-    public static boolean equal(Object o1, Object o2) {
-        return o1 == o2 || o1 != null && o1.equals(o2) || o2.equals(o1);
-    }
-
-    public static String trim(String s) {
-        return s == null ? null : s.trim();
-    }
-
     public static String encodeURL(String s) {
         try {
-            return URLEncoder.encode(null2empty(s), "UTF-8");
+            return URLEncoder.encode(str.null2empty(s), "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
-    }
-
-    public static String fromUTF8(byte[] ascii) {
-        try {
-            return new String(ascii, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
-    }
-
-    public static byte[] toUTF8(String s) {
-        try {
-            return s.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
-        }
-    }
-
-    private static final char[] hex = "0123456789ABCDEF".toCharArray();
-
-    public static String toHex(byte[] raw) {
-        if (raw == null || raw.length <= 0) {
-            return "";
-        }
-        StringBuilder out = new StringBuilder(raw.length * 2);
-        for (byte b : raw) {
-            out.append(hex[(b >> 4) & 0x0F]);
-            out.append(hex[(b     ) & 0x0F]);
-        }
-        return out.toString();
-    }
-
-    private static int nibble(char ch) {
-        if (ch >= '0' && ch <= '9') return (ch - '0');
-        if (ch >= 'a' && ch <= 'f') return (ch - 'a') + 0x0A;
-        if (ch >= 'A' && ch <= 'F') return (ch - 'A') + 0x0A;
-        return -1;
-    }
-
-    public static byte[] fromHex(String s) {
-        if (s == null) {
-            throw new NullPointerException("s is null");
-        }
-        if (s.length() % 2 != 0) {
-            throw new IllegalArgumentException("s=" + s);
-        }
-        s = s.trim().toLowerCase();
-        byte[] data = new byte[s.length() / 2];
-        for (int i = 0; i < data.length; ++i) {
-            int h = nibble(s.charAt(i * 2));
-            int l = nibble(s.charAt(i * 2 + 1));
-            assert h >= 0 && l >=0;
-            data[i] = (byte)((h & 0x0F) << 4 | (l & 0x0F));
-        }
-        return data;
-    }
-
-    public static String hexEncode(String s) {
-        try {
-            return isEmpty(s) ? s : toHex(s.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException x) {
-            throw new Error(s);
-        }
-    }
-
-    public static String hexDecode(String s) {
-        try {
-            return isEmpty(s) ? s : new String(fromHex(s), "UTF-8");
-        } catch (UnsupportedEncodingException x) {
-            throw new Error(s);
-        } catch (IOException e) {
             throw new Error(e);
         }
     }
@@ -167,22 +73,22 @@ public class util {
     }
 
     public static Long a2l(String a) {
-        try { return Long.parseLong(trim(a)); } catch (NumberFormatException t) { return null; }
+        try { return Long.parseLong(str.trim(a)); } catch (NumberFormatException t) { return null; }
     }
 
     public static Integer a2i(String a) {
-        try { return Integer.parseInt(trim(a)); } catch (NumberFormatException t) { return null; }
+        try { return Integer.parseInt(str.trim(a)); } catch (NumberFormatException t) { return null; }
     }
 
     public static Boolean a2b(String a) {
-        return Boolean.parseBoolean(trim(a)); }
+        return Boolean.parseBoolean(str.trim(a)); }
 
     public static Double a2d(String a) {
-        try { return Double.parseDouble(trim(a)); } catch (NumberFormatException t) { return null; }
+        try { return Double.parseDouble(str.trim(a)); } catch (NumberFormatException t) { return null; }
     }
 
     public static Float a2f(String a) {
-        try { return Float.parseFloat(trim(a)); } catch (NumberFormatException t) { return null; }
+        try { return Float.parseFloat(str.trim(a)); } catch (NumberFormatException t) { return null; }
     }
 
     public static String d2s(Date d) {
@@ -209,7 +115,7 @@ public class util {
 
     public static Class<?> forName(String n) {
         try {
-            return isEmpty(n) ? null : Class.forName(n);
+            return str.isEmpty(n) ? null : Class.forName(n);
         } catch (ClassNotFoundException e) {
             return null;
         }
@@ -236,22 +142,6 @@ public class util {
             t = t.getCause();
         }
         return t;
-    }
-
-    public static boolean exists(File f) {
-        try {
-            return f.exists();
-        } catch (AccessControlException x) {
-            return false;
-        }
-    }
-
-    public static boolean isDirectory(File f) {
-        try {
-            return f.isDirectory();
-        } catch (AccessControlException x) {
-            return false;
-        }
     }
 
     public static void timestamp(String key) { // returns delta in nanoseconds
