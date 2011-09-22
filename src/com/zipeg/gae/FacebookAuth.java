@@ -32,7 +32,6 @@ package com.zipeg.gae;
 
 import com.google.appengine.api.users.*;
 import com.google.appengine.repackaged.com.google.common.util.*;
-import com.google.appengine.repackaged.org.json.*;
 
 import javax.crypto.*;
 import javax.crypto.spec.*;
@@ -124,6 +123,7 @@ public class FacebookAuth extends Context  {
     public String access_token;
     public String error_description;
 
+    /** @noinspection ConstantConditions */
     public void facebook_auth_response() {
 /*
         http://localhost:8080/facebook_auth#state=%2Fsignin&access_token=AAABraORWNzkBAIkawwpw90ydGFZByvObLuEdqZBxYFPeNcMBmbV58rDPzuKRpXitXyw1N3KhDMQ8XupepzcZBlIPKLZBbmZCTppIHneNzvjcWvdDD75sE&expires_in=4289
@@ -226,11 +226,11 @@ public class FacebookAuth extends Context  {
         return Base64.decodeWebSafe(input);
     }
 
-    public static Map parse_signed_request(String input, String secret) throws Exception {
-        return parse_signed_request(input, secret, 3600);
+    public static Map<Object, Object> parse_signed_request(String s, String secret) throws Exception {
+        return parse_signed_request(s, secret, 3600);
     }
 
-    public static Map parse_signed_request(String input, String secret, int max_age)
+    public static Map<Object, Object> parse_signed_request(String input, String secret, int max_age)
             throws Exception {
         String[] split = input.split("[.]", 2);
         String encoded_sig = split[0];
@@ -263,7 +263,7 @@ public class FacebookAuth extends Context  {
         cipher.init(Cipher.DECRYPT_MODE, aesKey, ips);
         byte[] raw_cipher_text = base64_url_decode((String)envelope.get("payload"));
         byte[] plain_text = cipher.doFinal(raw_cipher_text);
-        return (Map)new JSONObject(new String(plain_text).trim());
+        return json.decode(new String(plain_text).trim());
     }
 
 }
