@@ -30,39 +30,48 @@
 */
 package com.zipeg.gae;
 
+import com.google.appengine.api.users.*;
+
 import javax.jdo.*;
 import javax.servlet.http.*;
 import java.io.*;
+import java.net.*;
+import java.security.*;
 import java.util.*;
 
 import static com.zipeg.gae.util.*;
 
 public class Context extends HashMap<String, Object> {
 
-    private static final PersistenceManagerFactory pmf = // long init
+    private static final PersistenceManagerFactory pmf = // make take long time to init
         JDOHelper.getPersistenceManagerFactory("transactions-optional");
+    public static final SecureRandom random = new SecureRandom();
 
     private static ThreadLocal<Context> tl = new ThreadLocal<Context>();
 
     public String[] path; // uri="/foo/bar" results in path={"foo", "bar"}
     public String view;  // can be null
-    public String server;  // http[s]://localhost:8080/ (with trailing slash
+    public String serverURL;  // http[s]://localhost:8080/ (with trailing slash)
     public HttpServletRequest  req;
     public HttpServletResponse res;
     public String revision = ""; // svn or other vcs revision
-    public String fbAppId = "101750116536752";  // test @ FB:leo.kuznetsov@gmail.com
+    public String fbAppId;
+    public String fbAppSecret;
+    public User   fbUser;
+    public Map<String, String> userInfo;
+    public Map<String, String> server; // unpacked server.properties file
     public final PersistenceManager  pm = pmf.getPersistenceManagerProxy();
     private PrintWriter echoWriter;
     private boolean redirected;
     private StringBuilder head = new StringBuilder();
     private StringBuilder body = new StringBuilder();
 
-    public static synchronized void set(Context ctx) {
+    public static void set(Context ctx) {
         assert (get() == null) != (ctx == null) : "get()=" + get() + " ctx=" + ctx;
         tl.set(ctx);
     }
 
-    public static synchronized Context get() {
+    public static Context get() {
         return tl.get();
     }
 
@@ -118,6 +127,82 @@ public class Context extends HashMap<String, Object> {
             get().redirected = true;
         } catch (IOException e) {
             throw new Error(e);
+        }
+    }
+
+    public static String localURL(String endpoint_and_query) {
+        String s = get().serverURL;
+        assert s.endsWith("/") : "unexpected serverURL=" + s;
+        String eq = null2empty(endpoint_and_query);
+        return s + (eq.startsWith("/") ? eq.substring(1) : eq);
+    }
+
+    public static String post(String endpoint, String data) {
+        java.net.HttpURLConnection c = null;
+        try {
+            c = (java.net.HttpURLConnection)new URL(endpoint).openConnection();
+            c.setRequestMethod("POST");
+            c.setUseCaches(false);
+            c.setDoInput(true);
+            c.setDoOutput(true);
+            c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            c.setRequestProperty("Content-Length", "" + data.length());
+            OutputStreamWriter wr = new OutputStreamWriter(c.getOutputStream());
+            wr.write(data);
+            wr.flush();
+            wr.close();
+            int code = c.getResponseCode();
+            if (code == 200) {
+                byte[] raw = io.readFully(c.getInputStream());
+                return util.trim(new String(raw));
+            } else {
+                System.err.println("postData(" + endpoint + ", " + data +") returned " + code);
+                Thread.dumpStack();
+                return "";
+            }
+        } catch (MalformedURLException e) {
+            System.err.println("postData(" + endpoint + ", " + data +") failed " + e.getMessage());
+            e.printStackTrace();
+            return "";
+        } catch (java.net.ProtocolException e) {
+            System.err.println("postData(" + endpoint + ", " + data +") failed " + e.getMessage());
+            e.printStackTrace();
+            return "";
+        } catch (IOException e) {
+            System.err.println("postData(" + endpoint + ", " + data +") failed " + e.getMessage());
+            e.printStackTrace();
+            return "";
+        } finally {
+            if (c != null) {
+                c.disconnect();
+            }
+        }
+    }
+
+    public static String post(String endpoint, Map<String, String> fd) {
+        StringBuilder sb = new StringBuilder(fd.size() * 100);
+        for (Map.Entry<String, String> e : fd.entrySet()) {
+            if (sb.length() > 0) {
+                sb.append('&');
+            }
+            sb.append(encode(e.getKey(), e.getValue()));
+        }
+        return post(endpoint, sb.toString());
+    }
+
+    private static String encode(String n, String v) {
+        return encodeURL(n) + "=" + encodeURL(v);
+    }
+
+    public String getUserInfo(String field) {
+        if (userInfo == null) {
+            // noinspection unchecked
+            userInfo = (Map<String, String>)Cookies.getInstance().get("user_info");
+        }
+        if (userInfo != null) {
+            return userInfo.get(field);
+        } else {
+            return null;
         }
     }
 

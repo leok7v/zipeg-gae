@@ -5,8 +5,11 @@ import="com.samples.gae.controllers.*"
 
 <div id="allContent" style="background-color: #0000FF; height:inherit; margin: 0, auto;">
   <div id="output" style="color: #FFFFFF;" ></div>
-  <p>fbapp.jspf appId='<%=((Facebook)Context.get()).fbAppId%> fluid canvas'
-  </p>
+  <p>fbapp.jspf appId='<%=Context.get().fbAppId%>' on fluid canvas</p>
+  <p>tab=<%=((Facebook)Context.get()).tab%></p>
+  <p>admin=<%=((Facebook)Context.get()).admin%></p>
+  <p id="userName">anonymous</p>
+  <a href="" onClick="fbLogin();">Login To FB</a>
 </div>
 
 <div id="fb-root"></div>
@@ -15,7 +18,7 @@ import="com.samples.gae.controllers.*"
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 <script type="text/javascript">
 
-  FB.init({ appId  : '<%=((Facebook)Context.get()).fbAppId%>' });
+  FB.init({ appId  : '<%=Context.get().fbAppId%>' });
 
   function echoSize() {
     var s = "window: " + window.innerWidth + "x" + window.innerHeight + "\n<br />\n" +
@@ -26,4 +29,40 @@ import="com.samples.gae.controllers.*"
 
   echoSize();
   window.onresize = echoSize;
+
+  function displayUser(user) {
+    var userName = document.getElementById('userName');
+    var greetingText = document.createTextNode('Greetings, ' + user.name + '.');
+    userName.appendChild(greetingText);
+  }
+
+  function fbLogin() {
+    var appID = '<%=Context.get().fbAppId%>';
+    var path, queryParams, query, url;
+    if (window.location.hash.length == 0) {
+      path = 'https://www.facebook.com/dialog/oauth?';
+      queryParams = ['client_id=' + appID, 'redirect_uri=' + encodeURIComponent(window.location),
+        'response_type=token'];
+      query = queryParams.join('&');
+      url = path + query;
+      console.log("url=" + url);
+      // alert("about to do window.open(" + url + ")");
+      window.open(url);
+/*
+      window.open(url, "Request Permissions", "status=0,width=1000,height=600,resizable=1");
+*/
+    } else {
+      accessToken = window.location.hash.substring(1);
+      alert("got accessToken=" + accessToken);
+      path = "https://graph.facebook.com/me?";
+      queryParams = [accessToken, 'callback=displayUser'];
+      query = queryParams.join('&');
+      url = path + query;
+      // use jsonp to call the graph
+      var script = document.createElement('script');
+      script.src = url;
+      document.body.appendChild(script);
+    }
+  }
+
 </script>

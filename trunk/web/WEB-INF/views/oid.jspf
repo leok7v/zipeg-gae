@@ -12,7 +12,7 @@ import="com.zipeg.gae.*"
   <ul class="providers">
     <li class="direct" title="Facebook">
       <img src="img/oid/facebookB.png" alt="icon" />
-      <span>https://www.facebook.com/dialog/oauth?client_id=<%=Context.get().fbAppId%>&redirect_uri=<%=Context.get().server%>signin</span>
+      <span>https://www.facebook.com/</span>
     </li>
     <li class="direct" title="Google">
       <img src="img/oid/googleB.png" alt="icon" />

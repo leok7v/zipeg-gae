@@ -9,14 +9,14 @@ import="com.zipeg.gae.*"
   that is rendered via servlet/dispatcher invocation.<br />
   svn revision = <%=Context.get().revision%>
   </p>
-  <p><a href="<%=Context.get().server%>test.html" >test.html</a></p>
-  <p><a href="<%=Context.get().server%>hello?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">hello test</a></p>
-  <p><a href="<%=Context.get().server%>ping?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">ping test</a></p>
-  <p><a href="<%=Context.get().server%>mvc?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">mvc test</a></p>
-  <p><a href="<%=Context.get().server%>fragment">fragment (fragment.jspf) test</a></p>
-  <p><a href="<%=Context.get().server%>layout/page.jsp" >/layout/page.jsp</a> should not be accessible</p>
+  <p><a href="<%=Context.get().serverURL%>test.html" >test.html</a></p>
+  <p><a href="<%=Context.get().serverURL%>hello?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">hello test</a></p>
+  <p><a href="<%=Context.get().serverURL%>ping?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">ping test</a></p>
+  <p><a href="<%=Context.get().serverURL%>mvc?date=1961-12-31T23:59:59.999Z&number=153&big=9223372036854775807&string=world&b=true">mvc test</a></p>
+  <p><a href="<%=Context.get().serverURL%>fragment">fragment (fragment.jspf) test</a></p>
+  <p><a href="<%=Context.get().serverURL%>layout/page.jsp" >/layout/page.jsp</a> should not be accessible</p>
   <br />
-  <p><a href="<%=Context.get().server%>signin" >signin</a></p>
-  <p><a href="<%=Context.get().server%>signout" >signout</a></p>
+  <p><a href="<%=Context.get().serverURL%>signin" >signin</a></p>
+  <p><a href="<%=Context.get().serverURL%>signout" >signout</a></p>
   </body>
 </html>

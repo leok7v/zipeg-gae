@@ -56,6 +56,7 @@ public class Auth extends Context {
         // http://openid.net/specs/openid-authentication-2_0.html#anchor27
         Set<String> attributes = new HashSet<String>();
         attributes.add("openid.ax.required=email,firstname,lastname");
+        attributes.add("fb=user_about_me,email");
         if (us.isUserLoggedIn()) {
             User u = us.getCurrentUser(); // or req.getUserPrincipal()
             echo("Hello <i>" + u.getNickname() + "</i>!<br />");
