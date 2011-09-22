@@ -54,11 +54,12 @@ public class dispatcher {
     private static final Map<String, Method> u2m =
             new HashMap<String, Method>(1000);
     private static final Set<String> contextMethods = new HashSet<String>(10);
+    private static Map<String, String> server;
     private static String revision = "wip";
 
     private dispatcher() { }
 
-    private static void init(ServletContext sc) {
+    private static void init(ServletContext sc) throws IOException {
         Set<Class<Context>> controllers = new HashSet<Class<Context>>(100);
         getAllClasses(Context.class, controllers);
         collectMethods(controllers, u2m);
@@ -69,9 +70,37 @@ public class dispatcher {
         Map<String, Method> cm = new HashMap<String, Method>();
         collectMethods(Context.class, cm);
         contextMethods.addAll(cm.keySet());
+        readRevision(sc);
+        readServerProperties(sc);
+    }
+
+    private static void readRevision(ServletContext sc) {
         InputStream is = sc.getResourceAsStream("/WEB-INF/revision.txt");
-        if (is != null) {
-            revision = new String(io.readFully(is)).trim();
+        try {
+            if (is != null) {
+                revision = new String(io.readFully(is)).trim();
+            }
+        } finally {
+            io.close(is);
+        }
+    }
+
+    private static void readServerProperties(ServletContext sc) throws IOException {
+        InputStream is = sc.getResourceAsStream("/WEB-INF/server.properties");
+        try {
+            if (is != null) {
+                Properties p = new Properties();
+                p.load(is);
+                Map<String, String> m = new HashMap<String, String>(p.size() * 2);
+                for (Map.Entry<Object, Object> e : p.entrySet()) {
+                    if (e.getKey() instanceof String && e.getValue() instanceof String) {
+                        m.put((String)e.getKey(), (String)e.getValue());
+                    }
+                }
+                server = Collections.unmodifiableMap(m);
+            }
+        } finally {
+            io.close(is);
         }
     }
 
@@ -128,6 +157,7 @@ public class dispatcher {
         if (ctx != null) {
             // we cannot do Context.set() in ctor because field collecting instantiates controllers
             Context.set(ctx);
+            Cookies.decode();
             try {
                 if (m != null) {
                     invoke(m, ctx);
@@ -141,6 +171,7 @@ public class dispatcher {
                         rd.forward(req, res);
                     }
                 }
+                res.addCookie(Cookies.encode());
                 return true;
             } finally {
                 Context.set(null);
@@ -155,11 +186,14 @@ public class dispatcher {
         ctx.res = res;
         ctx.path = path;
         ctx.view = endpoint;
-        ctx.server =
+        ctx.serverURL =
                 (req.isSecure() ? "https://" : "http://") +
                  req.getServerName() +
                 (req.getServerPort() == 80 ? "/" : ":" + req.getServerPort() + "/");
         ctx.revision = revision;
+        ctx.server = server;
+        ctx.fbAppId = server.get(req.getServerName() + ".fbAppId");
+        ctx.fbAppSecret = server.get(req.getServerName() + ".fbAppSecret");
     }
 
     private static RequestDispatcher getRequestDispatcher(ServletContext sc, String view) {

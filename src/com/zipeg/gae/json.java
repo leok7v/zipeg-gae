@@ -30,38 +30,19 @@
 */
 package com.zipeg.gae;
 
-import com.google.appengine.api.memcache.*;
+import org.json.*;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
 import java.util.*;
 
-import static com.zipeg.gae.util.*;
+/** @noinspection unchecked*/
+public class json {
 
-public class servlet extends HttpServlet {
-
-    static {
-        // http://groups.google.com/group/google-appengine/msg/cb538fa9b024f362
-        servlet.class.getClassLoader().setDefaultAssertionStatus(true);
-        // http://code.google.com/appengine/docs/java/howto/maintenance.html
-        MemcacheServiceFactory.getMemcacheService().setErrorHandler(new StrictErrorHandler());
+    public static Map<Object, Object> decode(String s) {
+        return (Map<Object, Object>)new JSONReader().read(s);
     }
 
-    protected void service(HttpServletRequest req, HttpServletResponse res) throws
-            ServletException, IOException {
-        trace(req.toString());
-        timestamp("service");
-        // servlet is dispatching dynamic content that should not be cached
-        res.setCharacterEncoding("utf-8");
-        res.setDateHeader("Expires", System.currentTimeMillis() - 1000 * 60 * 60 * 24);
-        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-        res.addHeader("Cache-Control", "post-check=0, pre-check=0");
-        res.setHeader("Pragma", "no-cache");
-        if (!dispatcher.dispatch(getServletContext(), req, res)) {
-            super.service(req, res);
-        }
-        timestamp("service");
+    public static String encode(Map<Object, Object> d) {
+        return new JSONWriter().write(d);
     }
 
 }

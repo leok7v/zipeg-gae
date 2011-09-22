@@ -75,19 +75,10 @@ public class io {
     }
 
     private static byte[] readFileContentFully(File f) {
-        FileInputStream s = null;
         try {
-            s = new FileInputStream(f);
-            byte[] buf = new byte[(int)f.length()];
-            int n = s.read(buf);
-            if (n != f.length()) { // this is very opportunistic assumption not yet seen broken
-                throw new Error("incomplete read: " + f);
-            }
-            return buf;
-        } catch (IOException e) {
+            return readFullyAndClose(new FileInputStream(f));
+        } catch (FileNotFoundException e) {
             throw new Error(e);
-        } finally {
-            close(s);
         }
     }
 
@@ -164,17 +155,11 @@ public class io {
                     File i = new File(f.getParentFile(), t);
                     if (i.exists()) {
                         lastModified = Math.max(lastModified, i.lastModified());
-/*
-                        stdio.err.println(i + " last modified:" + new Date(i.lastModified()));
-*/
                     } else {
                         throw new Error("file " + i + " not found.");
                     }
                 }
             }
-/*
-            stdio.err.println(f + " lastModified " + new Date(lastModified));
-*/
             return lastModified;
         }
     }
@@ -193,6 +178,14 @@ public class io {
             }
         } catch (IOException e) {
             throw new Error(e);
+        }
+    }
+
+    public static byte[] readFullyAndClose(InputStream is) {
+        try {
+            return readFully(is);
+        } finally {
+            close(is);
         }
     }
 
